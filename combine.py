@@ -35,7 +35,7 @@ def create_tables(conn):
     c.close()
 
 
-def insert_read_sequence(conn, sequence):
+def insert_read_sequence(conn, sequence, check=False):
     """
     Insert a read sequence into the Reads table. If the sequence already exists, do nothing.
 
@@ -46,21 +46,21 @@ def insert_read_sequence(conn, sequence):
     Returns:
         int: ID of the inserted read sequence.
     """
-    c = conn.cursor()
-    c.execute(f"SELECT read_id FROM Reads WHERE sequence = '{sequence}'")
-    data = c.fetchone()
-    if data:
-        c.close()
-        return data[0]
-    else:
-        c.execute(f"INSERT OR IGNORE INTO Reads (sequence) VALUES ('{sequence}')")
-        conn.commit()
-        read_id = c.lastrowid
-        c.close()
-        return read_id
+    if check:
+        c = conn.cursor()
+        c.execute(f"SELECT read_id FROM Reads WHERE sequence = '{sequence}'")
+        data = c.fetchone()
+        if data:
+            c.close()
+            return data[0]
+    c.execute(f"INSERT OR IGNORE INTO Reads (sequence) VALUES ('{sequence}')")
+    conn.commit()
+    read_id = c.lastrowid
+    c.close()
+    return read_id
 
 
-def insert_sample(conn, sample_name, metadata=None):
+def insert_sample(conn, sample_name, metadata=None, check=False):
     """
     Insert sample information into the Samples table.
 
@@ -72,21 +72,21 @@ def insert_sample(conn, sample_name, metadata=None):
     Returns:
         int: ID of the inserted sample.
     """
-    c = conn.cursor()
-    c.execute(f"SELECT sample_id FROM Samples WHERE sample_name = '{sample_name}'")
-    data = c.fetchone()
-    if data:
-        c.close()
-        return data[0]
-    else:
-        c.execute(f"INSERT INTO Samples (sample_name, metadata) VALUES ('{sample_name}', '{metadata}')")
-        conn.commit()
-        sample_id = c.lastrowid
-        c.close()
-        return sample_id
+    if check:
+        c = conn.cursor()
+        c.execute(f"SELECT sample_id FROM Samples WHERE sample_name = '{sample_name}'")
+        data = c.fetchone()
+        if data:
+            c.close()
+            return data[0]
+    c.execute(f"INSERT INTO Samples (sample_name, metadata) VALUES ('{sample_name}', '{metadata}')")
+    conn.commit()
+    sample_id = c.lastrowid
+    c.close()
+    return sample_id
 
 
-def insert_read_count(conn, read_id, sample_id, count):
+def insert_read_count(conn, read_id, sample_id, count, check=False):
     """
     Insert read count information into the ReadCounts table.
 
@@ -96,16 +96,17 @@ def insert_read_count(conn, read_id, sample_id, count):
         sample_id (int): ID of the sample.
         count (int): Count of the read in the sample.
     """
-    c = conn.cursor()
-    c.execute(f"SELECT * FROM ReadCounts WHERE read_id = {read_id} AND sample_id = {sample_id}")
-    data = c.fetchone()
-    if data:
-        c.close()
-        return
-    else:
-        c.execute(f"INSERT INTO ReadCounts (read_id, sample_id, count) VALUES ({read_id}, {sample_id}, {count})")
-        conn.commit()
-        c.close()
+    if check:
+        c = conn.cursor()
+        c.execute(f"SELECT * FROM ReadCounts WHERE read_id = {read_id} AND sample_id = {sample_id}")
+        data = c.fetchone()
+        if data:
+            c.close()
+            return
+    
+    c.execute(f"INSERT INTO ReadCounts (read_id, sample_id, count) VALUES ({read_id}, {sample_id}, {count})")
+    conn.commit()
+    c.close()
 
 
 def check_gzipped(file_name):
