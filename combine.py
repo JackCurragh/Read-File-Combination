@@ -46,8 +46,9 @@ def insert_read_sequence(conn, sequence, check=False):
     Returns:
         int: ID of the inserted read sequence.
     """
+    c = conn.cursor()
+
     if check:
-        c = conn.cursor()
         c.execute(f"SELECT read_id FROM Reads WHERE sequence = '{sequence}'")
         data = c.fetchone()
         if data:
@@ -72,8 +73,8 @@ def insert_sample(conn, sample_name, metadata=None, check=False):
     Returns:
         int: ID of the inserted sample.
     """
+    c = conn.cursor()
     if check:
-        c = conn.cursor()
         c.execute(f"SELECT sample_id FROM Samples WHERE sample_name = '{sample_name}'")
         data = c.fetchone()
         if data:
@@ -96,8 +97,9 @@ def insert_read_count(conn, read_id, sample_id, count, check=False):
         sample_id (int): ID of the sample.
         count (int): Count of the read in the sample.
     """
+    c = conn.cursor()
+
     if check:
-        c = conn.cursor()
         c.execute(f"SELECT * FROM ReadCounts WHERE read_id = {read_id} AND sample_id = {sample_id}")
         data = c.fetchone()
         if data:
